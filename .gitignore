@@ -8,6 +8,5 @@
 /tmp/
 .gitignore
 .idea/*
-.idea/aws_sudo.iml
-
+Gemfile.lock
 *.html
