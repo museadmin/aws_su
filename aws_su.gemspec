@@ -2,7 +2,7 @@
 
 lib = File.expand_path('../lib', __FILE__)
 $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
-require 'aws_sudo/version'
+require 'aws_su/version'
 
 Gem::Specification.new do |spec|
   spec.name          = 'aws_su'
@@ -22,10 +22,8 @@ Gem::Specification.new do |spec|
   # Prevent pushing this gem to RubyGems.org. To allow pushes either set the 'allowed_push_host'
   # to allow pushing to a single host or delete this section to allow pushing to any host.
   if spec.respond_to?(:metadata)
-    spec.metadata['allowed_push_host'] = 'http://localhost:9292/'
-
     spec.metadata['homepage_uri'] = spec.homepage
-    spec.metadata['source_code_uri'] = "Put your gem's public repo URL here."
+    spec.metadata['source_code_uri'] = 'https://github.com/museadmin/aws_su'
     spec.metadata['changelog_uri'] = "Put your gem's CHANGELOG.md URL here."
   else
     raise 'RubyGems >= 2.0 is required to protect against public gem pushes'

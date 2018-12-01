@@ -1,8 +1,7 @@
-# AwsSudo
+# AwsSu
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/aws_sudo`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+AwsSu is a gem developed for a specific use case, where the user has an ID setuo in an AWS master account and wants to 
+assume a role in another account that they have permission to assume.
 
 ## Installation
 
@@ -18,11 +17,52 @@ And then execute:
 
 Or install it yourself as:
 
-    $ gem install aws_sudo
+    $ gem install aws_su
 
 ## Usage
 
-TODO: Write usage instructions here
+Implemented as a Ruby Module, the gem can be included into any class that needs to authenticate and assume
+a role prior to calling one of the aws client methods like so:
+
+```ruby
+require 'aws_su'
+
+class Runner
+  include AwsSu
+end
+
+runner = Runner.new
+runner.authenticate('my-profile')
+runner.ec2_client.describe_vpcs
+```
+
+The gem expects to find the standard aws secrets files:
+
+- ~/.aws/credentials
+- ~/.aws/config
+
+With the former containing the master account secrets:
+
+```[master]
+   aws_access_key_id = XXXXXXXXXXXXXX
+   aws_secret_access_key = XXXXXXXXXXXXXXXXXXXX
+```
+
+And the latter containing the details of the role to be assumed:
+
+```
+[profile my-profile]
+source_profile=master
+mfa_serial=arn:aws:iam::1234567890:mfa/bradley.atkins@bjss.com
+role_arn=arn:aws:iam::1234567890:role/MY-NONPROD-TESTER-ROLE
+```
+
+AwsSu also configures the current shell with the necessary environment variables to allow system calls to 
+be made without further authentication:
+
+```ruby
+system('aws ec2 describe-vpcs --region eu-west-2')
+```
 
 ## Development
 
