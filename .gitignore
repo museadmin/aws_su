@@ -10,3 +10,4 @@
 .idea/*
 Gemfile.lock
 *.html
+/test/runner.rb

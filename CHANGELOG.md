@@ -9,3 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Ability to authenticate and switch role via a single authenticate() method
 - Gemspec file updated to enable push to Rubygems.org
+
+## [0.1.1] - 02-12-2018
+### Added
+- Required ruby version in gemspec
+- Housekeeping now on both github and rubygems

@@ -3,9 +3,28 @@
 require 'aws_config'
 require 'matches'
 require 'awsecrets'
-require 'aws_sudo/version'
+require 'aws_su/version'
 
-# Set up the AWS authentication environment
+# Set up the AWS authentication environment for a user
+# who has an ID in a master account and is allowed to
+# switch to a role in another account.
+#
+# Typical usage scenario:
+#
+# require 'aws_su'
+#
+# class Runner
+#   include AwsSu
+# end
+#
+# runner = Runner.new
+# runner.authenticate('my-non-prod')
+# runner.ec2_client.describe_vpcs
+#
+# system('aws ec2 describe-vpcs --region eu-west-2')
+#
+#
+#
 module AwsSu
   class Error < StandardError; end
 

@@ -12,8 +12,8 @@ Gem::Specification.new do |spec|
 
   spec.summary       = 'Gem to wrap helper methods around AWS authentication API'
   spec.description   = 'Developed for a specific use case: ' \
-      'User has an AWS id in a master account and wants to assume'\
-      ' a role in another account. This module exposes a single'\
+      'User has an AWS id in a master account and wants to assume '\
+      'a role in another account. This module exposes a single '\
       'authenticate() method that handles authentication and switching role '\
       'by referencing the user\'s aws secrets.'
   spec.homepage      = 'https://github.com/museadmin'
@@ -24,7 +24,7 @@ Gem::Specification.new do |spec|
   if spec.respond_to?(:metadata)
     spec.metadata['homepage_uri'] = spec.homepage
     spec.metadata['source_code_uri'] = 'https://github.com/museadmin/aws_su'
-    spec.metadata['changelog_uri'] = "Put your gem's CHANGELOG.md URL here."
+    spec.metadata['changelog_uri'] = 'https://github.com/museadmin/aws_su/blob/master/CHANGELOG.md'
   else
     raise 'RubyGems >= 2.0 is required to protect against public gem pushes'
   end
@@ -39,6 +39,7 @@ Gem::Specification.new do |spec|
   spec.bindir        = 'exe'
   spec.executables   = spec.files.grep(%r{^exe/}) { |f| File.basename(f) }
   spec.require_paths = ['lib']
+  spec.required_ruby_version = '>= 2.4'
 
   spec.add_development_dependency 'awsecrets'
   spec.add_development_dependency 'bundler', '~> 1.17'
