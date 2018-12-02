@@ -75,6 +75,30 @@ Clients currently supported are:
 - iam_client
 - sqs_client
 
+After you use the authenticator, running the AWS CLI from the command line is possible via the 
+assumed role if you add this function to your ~/.bashrc or ~/bash_profile file:
+
+```
+    function awssu() {
+        while read line
+        do
+            export "${line}"
+        done < ~/.awssudo
+        export AWS_DEFAULT_REGION="${1:-eu-west-2}" # Change to your default region
+    }
+```
+
+If you have a valid session still available then you can enter:
+
+```bash
+    awssu eu-west-1
+``` 
+
+The region is optional and will default to eu-west-2 unless you change the default in the function.
+ 
+This will call the function which will export the contents of the environment variables 
+and then you can run the CLI without further authentication.
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.

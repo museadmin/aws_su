@@ -61,6 +61,8 @@ module AwsSu
     @token_ttl = calculate_session_expiry(@duration)
 
     region = AWSConfig.profiles.first[1][:region]
+    region = AWSConfig.profiles[@profile][:region] unless
+        AWSConfig.profiles[@profile][:region].nil?
     @region = options[:region].nil? ? region : options[:region]
     raise('Unable to determine region') if @region.nil?
 
