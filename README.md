@@ -68,6 +68,13 @@ be made without further authentication:
   system('aws ec2 describe-vpcs --region eu-west-2')
 ```
 
+Clients currently supported are:
+
+- ec2_client
+- elb_client
+- iam_client
+- sqs_client
+
 ## Development
 
 After checking out the repo, run `bin/setup` to install dependencies. Then, run `rake test` to run the tests. You can also run `bin/console` for an interactive prompt that will allow you to experiment.
