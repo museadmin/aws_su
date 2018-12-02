@@ -8,7 +8,7 @@ assume a role in another account that they have permission to assume.
 Add this line to your application's Gemfile:
 
 ```ruby
-gem 'aws_su'
+  gem 'aws_su'
 ```
 
 And then execute:
@@ -25,15 +25,19 @@ Implemented as a Ruby Module, the gem can be included into any class that needs 
 a role prior to calling one of the aws client methods like so:
 
 ```ruby
-require 'aws_su'
-
-class Runner
-  include AwsSu
-end
-
-runner = Runner.new
-runner.authenticate('my-profile')
-runner.ec2_client.describe_vpcs
+    require 'aws_su'
+    
+    class RunAwsSu
+      include AwsSu
+    end
+    
+    run_aws_su = RunAwsSu.new
+    run_aws_su.authenticate(
+      profile: 'ds-nonprod',
+      duration: '28800',
+      region: 'eu-west-2'
+    )
+    run_aws_su.ec2_client.describe_vpcs
 ```
 
 The gem expects to find the standard aws secrets files:
@@ -51,17 +55,17 @@ With the former containing the master account secrets:
 And the latter containing the details of the role to be assumed:
 
 ```
-[profile my-profile]
-source_profile=master
-mfa_serial=arn:aws:iam::1234567890:mfa/bradley.atkins@bjss.com
-role_arn=arn:aws:iam::1234567890:role/MY-NONPROD-TESTER-ROLE
+    [profile my-profile]
+    source_profile=master
+    mfa_serial=arn:aws:iam::1234567890:mfa/bradley.atkins@bjss.com
+    role_arn=arn:aws:iam::1234567890:role/MY-NONPROD-TESTER-ROLE
 ```
 
 AwsSu also configures the current shell with the necessary environment variables to allow system calls to 
 be made without further authentication:
 
 ```ruby
-system('aws ec2 describe-vpcs --region eu-west-2')
+  system('aws ec2 describe-vpcs --region eu-west-2')
 ```
 
 ## Development

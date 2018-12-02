@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 # Match AWS_PROFILE
 class MatchesAwsProfile

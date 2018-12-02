@@ -11,19 +11,30 @@ require 'aws_su/version'
 #
 # Typical usage scenario:
 #
-# require 'aws_su'
+#   require 'aws_su'
 #
-# class Runner
+#   class RunAwsSu
 #   include AwsSu
-# end
+#   end
 #
-# runner = Runner.new
-# runner.authenticate('my-non-prod')
-# runner.ec2_client.describe_vpcs
+#   run_aws_su = RunAwsSu.new
+#   run_aws_su.authenticate(
+#     profile: 'ds-nonprod',
+#     duration: '28800',
+#     region: 'eu-west-2'
+#   )
+#   run_aws_su.ec2_client.describe_vpcs
 #
-# system('aws ec2 describe-vpcs --region eu-west-2')
+# also sets up current shell so system calls don't need further authentication:
 #
+#   system('aws ec2 describe-vpcs --region eu-west-2')
 #
+# It is assumed that the region is set in the first profile in .aws/config, e.g.
+#
+#   [profile master]
+#   region=eu-west-2
+#
+# or it can be set in the call to authenticate() as shown above
 #
 module AwsSu
   class Error < StandardError; end
@@ -38,11 +49,21 @@ module AwsSu
   @master_config = Awsecrets.load # AWS config for master account
 
   # Authenticate user for the session
-  def authenticate(profile, duration = DURATION)
-    @session = "awssudo-session-#{Time.now.to_i}"
-    @token_ttl = calculate_session_expiry(duration)
-    @profile = profile
-    @duration = duration
+  # @param options Hash {
+  #   duration: 'AWS role session timeout',
+  #   region: AWS region,
+  #   profile: Name of profile in .aws/config to use
+  # }
+  def authenticate(options = {})
+    @session = "aws-su-session-#{Time.now.to_i}"
+    @profile = options[:profile]
+    @duration = options[:duration].nil? ? DURATION : options[:duration]
+    @token_ttl = calculate_session_expiry(@duration)
+
+    region = AWSConfig.profiles.first[1][:region]
+    @region = options[:region].nil? ? region : options[:region]
+    raise('Unable to determine region') if @region.nil?
+
     export_aws_sudo_file
     assume_role
   end
@@ -67,21 +88,24 @@ module AwsSu
     Aws::S3::Client.new
   end
 
-  # Get an STS client so we can request a session token
+  # SQS Client
+  def sqs_client
+    Aws::SQS::Client.new
+  end
+
+  # STS
   def sts_client
     Aws::STS::Client.new(
-        credentials: load_secrets,
-        region: 'eu-west-2'
+      credentials: load_secrets,
+      region: @region
     )
   end
 
   private
-  # Assume a role
-  # @param duration A string integer representing the session duration
-  def assume_role(duration = DURATION)
-    # For the benefit of anything downstream we are running
-    export_aws_sudo_file
 
+  # Assume a role
+  # @param duration A string integer representing the role session duration
+  def assume_role(duration = DURATION)
     if session_valid?
       # Recover persisted session and use that to update AWS.config
       Aws.config.update(
@@ -93,25 +117,28 @@ module AwsSu
       )
     else
       # Session has expired so auth again
-      assume_role_with_mfa_token(duration)
+      assume_role_mfa(duration)
     end
+    # For the benefit of anything downstream we are running
+    export_aws_sudo_file
   end
 
   # Assume a role using an MFA Token
-  def assume_role_with_mfa_token(duration, mfa_code = nil)
+  def assume_role_mfa(duration, mfa_code = nil)
     mfa_code = prompt_for_mfa_code if mfa_code.nil?
     role_creds = sts_client.assume_role(
-        role_arn: AWSConfig[@profile]['role_arn'],
-        role_session_name: @session,
-        duration_seconds: duration.to_i,
-        serial_number: AWSConfig[@profile]['mfa_serial'],
-        token_code: mfa_code.to_s
+      role_arn: AWSConfig[@profile]['role_arn'],
+      role_session_name: @session,
+      duration_seconds: duration.to_i,
+      serial_number: AWSConfig[@profile]['mfa_serial'],
+      token_code: mfa_code.to_s
     )
     update_aws_config(role_creds)
-    persist_aws_sudo(role_creds)
+    persist_aws_su(role_creds)
   end
 
   # Calculate the session expiration
+  # # @param duration A string integer representing the role session duration
   def calculate_session_expiry(duration = DURATION)
     (Time.now + duration.to_i).strftime('%Y-%m-%d %H:%M:%S')
   end
@@ -167,20 +194,6 @@ module AwsSu
     end
   end
 
-  # Recover the role_arn from the AWS config file
-  def parse_role_arn
-    File.readlines(AWS_CONFIG_FILE).each do |line|
-      return line.split('=')[1].chomp if line.include?('role_arn')
-    end
-  end
-
-  # Recover the mfa serial number from AWS config file
-  def parse_mfa_serial
-    File.readlines(AWS_CONFIG_FILE).each do |line|
-      return line.split('=')[1].chomp if line.include?('mfa_serial')
-    end
-  end
-
   # Parse the session token from awssudo
   def parse_session_token
     File.readlines(AWS_SUDO_FILE).each do |line|
@@ -196,14 +209,16 @@ module AwsSu
   end
 
   # Persist the config to the awssudo file
-  def persist_aws_sudo(config, file = AWS_SUDO_FILE)
-    File.open(file, 'w') do |file|
-      file.puts('AWS_ACCESS_KEY_ID=' + config.credentials.access_key_id)
-      file.puts('AWS_SECRET_ACCESS_KEY=' + config.credentials.secret_access_key)
-      file.puts('AWS_SESSION_TOKEN=' + config.credentials.session_token)
-      file.puts('AWS_SECURITY_TOKEN=' + config.credentials.session_token)
-      file.puts('AWS_TOKEN_TTL=' + @token_ttl)
-      file.puts('AWS_PROFILE=' + @profile)
+  # @param config Credentials from assume role to persist
+  # @param file The temporary secrets file ~/.awssudo
+  def persist_aws_su(config, file = AWS_SUDO_FILE)
+    File.open(file, 'w') do |f|
+      f.puts('AWS_ACCESS_KEY_ID=' + config.credentials.access_key_id)
+      f.puts('AWS_SECRET_ACCESS_KEY=' + config.credentials.secret_access_key)
+      f.puts('AWS_SESSION_TOKEN=' + config.credentials.session_token)
+      f.puts('AWS_SECURITY_TOKEN=' + config.credentials.session_token)
+      f.puts('AWS_TOKEN_TTL=' + @token_ttl)
+      f.puts('AWS_PROFILE=' + @profile)
     end
   end
 

@@ -13,4 +13,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.1] - 02-12-2018
 ### Added
 - Required ruby version in gemspec
-- Housekeeping now on both github and rubygems
+- Housekeeping now that gem is on both github and rubygems
+- Changed authenticate() method to accept options hash
+- Added detailed header to AwsSu module

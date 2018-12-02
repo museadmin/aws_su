@@ -1,3 +1,4 @@
+# frozen_string_literal: true
 
 # Match AWS_SECRET_ACCESS_KEY
 class MatchesAwsSecretAccessKey
