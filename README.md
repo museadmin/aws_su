@@ -1,6 +1,6 @@
 # AwsSu
 
-AwsSu is a gem developed for a specific use case, where the user has an ID setuo in an AWS master account and wants to 
+AwsSu is a gem developed for a specific use case, where the user has an ID setup in an AWS master account and wants to 
 assume a role in another account that they have permission to assume.
 
 ## Installation
