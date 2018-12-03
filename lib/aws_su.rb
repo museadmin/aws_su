@@ -181,7 +181,7 @@ module AwsSu
     ENV['AWS_SECURITY_TOKEN'] = config.credentials.session_token
     ENV['AWS_TOKEN_TTL'] = @token_ttl
     ENV['AWS_PROFILE'] = @profile
-    ENV['AWS_REGION'] = @region
+    ENV['AWS_DEFAULT_REGION'] = @region
   end
 
   # Load the user's AWS Secrets
