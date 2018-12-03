@@ -31,3 +31,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.6] - 03-12-2018
 ### Removed
 - export of AWS_PROFILE
+
+## [0.1.7] - 03-12-2018
+### Changed
+- For MFA, export awssudo file
+- For existing session, export sts creds

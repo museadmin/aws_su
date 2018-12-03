@@ -66,7 +66,6 @@ module AwsSu
     @region = options[:region].nil? ? region : options[:region]
     raise('Unable to determine region') if @region.nil?
 
-    export_aws_sudo_file
     assume_role
   end
 
@@ -110,19 +109,19 @@ module AwsSu
   def assume_role(duration = DURATION)
     if session_valid?
       # Recover persisted session and use that to update AWS.config
-      Aws.config.update(
+      config = Aws.config.update(
         credentials: Aws::Credentials.new(
           parse_access_key,
           parse_secret_access_key,
           parse_session_token
         )
       )
+      export_config_to_environment(config)
     else
       # Session has expired so auth again
       assume_role_mfa(duration)
+      export_aws_sudo_file
     end
-    # For the benefit of anything downstream we are running
-    export_aws_sudo_file
   end
 
   # Assume a role using an MFA Token
@@ -175,10 +174,10 @@ module AwsSu
 
   # Export the AWS values to the ENV
   def export_config_to_environment(config)
-    ENV['AWS_ACCESS_KEY_ID'] = config.credentials.access_key_id
-    ENV['AWS_SECRET_ACCESS_KEY'] = config.credentials.secret_access_key
-    ENV['AWS_SESSION_TOKEN'] = config.credentials.session_token
-    ENV['AWS_SECURITY_TOKEN'] = config.credentials.session_token
+    ENV['AWS_ACCESS_KEY_ID'] = config[:credentials].access_key_id
+    ENV['AWS_SECRET_ACCESS_KEY'] = config[:credentials].secret_access_key
+    ENV['AWS_SESSION_TOKEN'] = config[:credentials].session_token
+    ENV['AWS_SECURITY_TOKEN'] = config[:credentials].session_token
     ENV['AWS_TOKEN_TTL'] = @token_ttl
     ENV['AWS_DEFAULT_REGION'] = @region
   end
