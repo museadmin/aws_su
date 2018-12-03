@@ -128,6 +128,7 @@ module AwsSu
   # Assume a role using an MFA Token
   def assume_role_mfa(duration, mfa_code = nil)
     mfa_code = prompt_for_mfa_code if mfa_code.nil?
+    delete_sudo_file
     role_creds = sts_client.assume_role(
       role_arn: AWSConfig[@profile]['role_arn'],
       role_session_name: @session,
@@ -143,6 +144,11 @@ module AwsSu
   # # @param duration A string integer representing the role session duration
   def calculate_session_expiry(duration = DURATION)
     (Time.now + duration.to_i).strftime('%Y-%m-%d %H:%M:%S')
+  end
+
+  # Delete the AWS sudo file
+  def delete_sudo_file
+    File.delete(AWS_SUDO_FILE) if File.exist?(AWS_SUDO_FILE)
   end
 
   # Get the values for AWS secrets etc and export them to the environment
@@ -244,7 +250,7 @@ module AwsSu
     false
   end
 
-  # Update the Aws.config
+  # Update the Aws.config hash
   def update_aws_config(role_creds)
     Aws.config.update(
       credentials: Aws::Credentials.new(
