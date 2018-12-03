@@ -27,3 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.5] - 03-12-2018
 ### Added
 - Added export of AWS_DEFAULT_REGION
+
+## [0.1.6] - 03-12-2018
+### Removed
+- export of AWS_PROFILE

@@ -180,7 +180,6 @@ module AwsSu
     ENV['AWS_SESSION_TOKEN'] = config.credentials.session_token
     ENV['AWS_SECURITY_TOKEN'] = config.credentials.session_token
     ENV['AWS_TOKEN_TTL'] = @token_ttl
-    ENV['AWS_PROFILE'] = @profile
     ENV['AWS_DEFAULT_REGION'] = @region
   end
 
