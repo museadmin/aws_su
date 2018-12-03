@@ -166,8 +166,8 @@ module AwsSu
         ENV['AWS_SECURITY_TOKEN'] = line.split('=')[1].strip
       when MatchesAwsTokenEtl
         ENV['AWS_TOKEN_TTL'] = line.split('=')[1].strip
-      when MatchesAwsProfile
-        ENV['AWS_PROFILE'] = line.split('=')[1].strip
+      # when MatchesAwsProfile
+      #   ENV['AWS_PROFILE'] = line.split('=')[1].strip
       end
     end
   end
