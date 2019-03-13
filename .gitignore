@@ -8,6 +8,5 @@
 /tmp/
 .gitignore
 .idea/*
-Gemfile.lock
 *.html
 /test/runner.rb
